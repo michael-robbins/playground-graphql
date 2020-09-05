@@ -21,6 +21,9 @@ Traefik =(HTTP)=> Daphne =(ASGI)=> Django =(Python)=> Ariadne GraphQL Framework 
 
 ## Data Stores & Services
 * Various business data stores/services available to query
+* PostgreSQL
+* Sqlite3
+* Another Web Service
 
 # The Experiment
 Build an Inventory Display System for Company XYZ
