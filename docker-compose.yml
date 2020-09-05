@@ -22,11 +22,6 @@ services:
     ports:
       - "8080:80"
 
-    volumes:
-      - type: volume
-        source: "traefik-letsencrypt"
-        target: "/letsencrypt"
-
     networks:
       - inventory
 
@@ -91,8 +86,9 @@ services:
     container_name: "item_catalogue"
 
     command:
-      - "service"
+      - "--host"
       - "0.0.0.0"
+      - "--port"
       - "8080"
 
     networks:
