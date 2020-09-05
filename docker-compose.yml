@@ -17,7 +17,7 @@ services:
       - "--http.routers.backend.entrypoints=web"
       - "--http.routers.backend.rule=Host(`*`)"
       - "--http.routers.backend.service=backend"
-      - "--http.services.backend.loadBalancer.servers.url=http://viewer_backend:8080"
+      - "--http.services.backend.loadBalancer.servers.url=http://viewer_service_backend:8080"
 
     ports:
       - "8080:80"
@@ -31,20 +31,15 @@ services:
       - item_catalogue
 
     build: "./viewer_service"
-    image: "graphql_server:latest"
-    container_name: "viewer_backend"
+    image: "viewer_service_backend:latest"
+    container_name: "viewer_service_backend"
 
     environment:
       ENVIRONMENT: "dev"
       ITEM_INVENTORY_URI: "postgres://graphql:password@item_inventory:5432/inventory"
       ITEM_CATALOGUE_URI: "http://item_catalogue:8080"
 
-    command:
-      - "daphne"
-      - "run"
-      - "0.0.0.0"
-      - "8080"
-      - "asgi.entrypoint"
+    command: ["-b", "0.0.0.0", "-p", "8080", "viewer_service.asgi:application"]
 
     networks:
       - inventory
