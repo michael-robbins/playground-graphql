@@ -1,0 +1,102 @@
+version: '3.8'
+services:
+  viewer_frontend:
+    depends_on:
+      - viewer_backend
+
+    image: "traefik:2.2"
+    container_name: "viewer_frontend"
+
+    environment:
+      TZ: "Australia/Melbourne"
+
+    command:
+      - "--api=true"
+      - "--global.sendAnonymousUsage=false"
+      - "--entrypoints.web.address=:80"
+      - "--http.routers.backend.entrypoints=web"
+      - "--http.routers.backend.rule=Host(`*`)"
+      - "--http.routers.backend.service=backend"
+      - "--http.services.backend.loadBalancer.servers.url=http://viewer_backend:8080"
+
+    ports:
+      - "8080:80"
+
+    volumes:
+      - type: volume
+        source: "traefik-letsencrypt"
+        target: "/letsencrypt"
+
+    networks:
+      - inventory
+
+  viewer_backend:
+    depends_on:
+      - item_inventory
+      - item_catalogue
+
+    build: "./src"
+    image: "graphql_server:latest"
+    container_name: "viewer_backend"
+
+    command:
+      - "daphne"
+      - "run"
+      - "0.0.0.0"
+      - "8080"
+      - "asgi.entrypoint"
+
+    environment:
+      ENVIRONMENT: "dev"
+      ITEM_INVENTORY_URI: "postgres://graphql:password@item_inventory:5432/inventory"
+      ITEM_CATALOGUE_URI: "http://item_catalogue:8080"
+
+  item_inventory:
+    image: "postgres:12.4"
+    container_name: "item_inventory"
+
+    environment:
+      POSTGRES_USER: "graphql"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "inventory"
+
+    networks:
+      - inventory
+
+  item_inventory_management:
+    depends_on:
+      - item_inventory
+
+    image: "flyway/flyway:latest"
+    container_name: "item_inventory_management"
+
+    command:
+      - "-url=jdbc:postgres://item_inventory/inventory"
+      - "-user=graphql"
+      - "-password=password"
+      - "-connectRetries=30"
+      - "migrate"
+
+    volumes:
+      - type: bind
+        source: "./data/inventory_sql/"
+        target: "/flyway/sql"
+
+    networks:
+      - inventory
+
+  item_catalogue:
+    build: "./item_catalogue_service"
+    image: "item_catalogue_service:latest"
+    container_name: "item_catalogue"
+
+    command:
+      - "service"
+      - "0.0.0.0"
+      - "8080"
+
+    networks:
+      - inventory
+
+networks:
+  inventory:
