@@ -77,7 +77,7 @@ services:
 
     volumes:
       - type: bind
-        source: "./data/inventory_sql/"
+        source: "./item_inventory_service/sql/"
         target: "/flyway/sql"
 
     networks:
