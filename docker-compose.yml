@@ -1,8 +1,8 @@
 version: '3.8'
 services:
-  viewer_frontend:
+  viewer_service_frontend:
     depends_on:
-      - viewer_backend
+      - viewer_service_backend
 
     image: "traefik:2.2"
     container_name: "viewer_frontend"
@@ -25,12 +25,12 @@ services:
     networks:
       - inventory
 
-  viewer_backend:
+  viewer_service_backend:
     depends_on:
       - item_inventory
       - item_catalogue
 
-    build: "./src"
+    build: "./viewer_service"
     image: "graphql_server:latest"
     container_name: "viewer_backend"
 
