@@ -34,6 +34,11 @@ services:
     image: "graphql_server:latest"
     container_name: "viewer_backend"
 
+    environment:
+      ENVIRONMENT: "dev"
+      ITEM_INVENTORY_URI: "postgres://graphql:password@item_inventory:5432/inventory"
+      ITEM_CATALOGUE_URI: "http://item_catalogue:8080"
+
     command:
       - "daphne"
       - "run"
@@ -41,10 +46,8 @@ services:
       - "8080"
       - "asgi.entrypoint"
 
-    environment:
-      ENVIRONMENT: "dev"
-      ITEM_INVENTORY_URI: "postgres://graphql:password@item_inventory:5432/inventory"
-      ITEM_CATALOGUE_URI: "http://item_catalogue:8080"
+    networks:
+      - inventory
 
   item_inventory:
     image: "postgres:12.4"
@@ -85,11 +88,7 @@ services:
     image: "item_catalogue_service:latest"
     container_name: "item_catalogue"
 
-    command:
-      - "--host"
-      - "0.0.0.0"
-      - "--port"
-      - "8080"
+    command: ["--host", "0.0.0.0", "--port", "8080"]
 
     networks:
       - inventory
