@@ -1,11 +1,11 @@
 version: '3.8'
 services:
-  viewer_service_frontend:
+  viewer_service_proxy:
     depends_on:
-      - viewer_service_backend
+      - viewer_service
 
     image: "traefik:2.2"
-    container_name: "viewer_frontend"
+    container_name: "viewer_service_proxy"
 
     environment:
       TZ: "Australia/Melbourne"
@@ -17,7 +17,7 @@ services:
       - "--http.routers.backend.entrypoints=web"
       - "--http.routers.backend.rule=Host(`*`)"
       - "--http.routers.backend.service=backend"
-      - "--http.services.backend.loadBalancer.servers.url=http://viewer_service_backend:8080"
+      - "--http.services.backend.loadBalancer.servers.url=http://viewer_service:8080"
 
     ports:
       - "8080:80"
@@ -25,14 +25,14 @@ services:
     networks:
       - inventory
 
-  viewer_service_backend:
+  viewer_service:
     depends_on:
       - item_inventory
       - item_catalogue
 
     build: "./viewer_service"
-    image: "viewer_service_backend:latest"
-    container_name: "viewer_service_backend"
+    image: "viewer_service:latest"
+    container_name: "viewer_service"
 
     environment:
       ENVIRONMENT: "dev"
