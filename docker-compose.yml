@@ -11,13 +11,12 @@ services:
       TZ: "Australia/Melbourne"
 
     command:
-      - "--api=true"
-      - "--global.sendAnonymousUsage=false"
-      - "--entrypoints.web.address=:80"
-      - "--http.routers.backend.entrypoints=web"
-      - "--http.routers.backend.rule=Host(`*`)"
-      - "--http.routers.backend.service=backend"
-      - "--http.services.backend.loadBalancer.servers.url=http://viewer_service:8080"
+      - "--providers.file.filename=/etc/traefik/traefik.yml"
+
+    volumes:
+      - type: bind
+        source: "./viewer_service/traefik.yml"
+        target: "/etc/traefik/traefik.yml"
 
     ports:
       - "8080:80"
@@ -65,7 +64,7 @@ services:
     container_name: "item_inventory_management"
 
     command:
-      - "-url=jdbc:postgres://item_inventory/inventory"
+      - "-url=jdbc:postgresql://item_inventory/inventory"
       - "-user=graphql"
       - "-password=password"
       - "-connectRetries=30"
@@ -84,7 +83,8 @@ services:
     image: "item_catalogue_service:latest"
     container_name: "item_catalogue"
 
-    command: ["--host", "0.0.0.0", "--port", "8080"]
+    entrypoint: ["python3"]
+    command: ["service.py", "--host", "0.0.0.0", "--port", "8080"]
 
     networks:
       - inventory
